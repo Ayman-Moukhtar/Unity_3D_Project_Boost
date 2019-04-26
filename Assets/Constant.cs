@@ -11,6 +11,8 @@ namespace Assets
         public class Tag
         {
             public const string Friendly = "Friendly";
+            public const string Finish = "Finish";
+            public const string Untagged = "Untagged";
         }
     }
 }
