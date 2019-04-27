@@ -9,6 +9,7 @@ public class Rocket : MonoBehaviour
     private Rigidbody _rocket;
     private AudioSource _audio;
     private State _state;
+    private static bool _isDebugMode = false;
 
     [SerializeField] private float _mainThrustSpeed = 2500f;
     [SerializeField] private float _rotationSpeed = 250f;
@@ -34,6 +35,7 @@ public class Rocket : MonoBehaviour
         {
             return;
         }
+        ProcessInput();
         Thrust();
         Rotate();
     }
@@ -48,11 +50,29 @@ public class Rocket : MonoBehaviour
         switch (collision.gameObject.tag)
         {
             case Constant.Tag.Untagged:
+                if (_isDebugMode)
+                {
+                    break;
+                }
                 StartDeathSequence();
                 break;
             case Constant.Tag.Finish:
                 StartSuccessSequence();
                 break;
+        }
+    }
+
+    private void ProcessInput()
+    {
+        if (Input.GetKeyDown(KeyCode.L) && Debug.isDebugBuild)
+        {
+            LoadNextScene();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.C) && Debug.isDebugBuild)
+        {
+            _isDebugMode = !_isDebugMode;
         }
     }
 
@@ -126,9 +146,10 @@ public class Rocket : MonoBehaviour
     private void LoadNextScene()
     {
         var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(currentSceneIndex == 1 ? 0 : 1);
-    }
+        var lastSceneIndex = SceneManager.sceneCountInBuildSettings - 1;
 
+        SceneManager.LoadScene(currentSceneIndex == lastSceneIndex ? 0 : currentSceneIndex + 1);
+    }
     private void ResetGame() => SceneManager.LoadScene(0);
     #endregion
 }

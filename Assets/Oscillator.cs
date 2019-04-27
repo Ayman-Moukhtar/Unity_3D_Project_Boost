@@ -4,16 +4,12 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class Oscillator : MonoBehaviour
 {
-    private enum Direction { Left, Right };
-
     private Vector3 _startingPosition;
-    private Direction _direction;
 
     [SerializeField] private Vector3 _movementVector = new Vector3(10, 0, 0);
     [SerializeField] private float _period = 2f; // Time - in seconds - object takes to move back and forth for a complete cycle
 
     [Range(0, 1)]
-    [SerializeField]
     private float _movementFactor;
 
     // Start is called before the first frame update
@@ -25,6 +21,7 @@ public class Oscillator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        #region Manually
         //if (_movementFactor > 1f && _direction == Direction.Right)
         //{
         //    _direction = Direction.Left;
@@ -41,6 +38,13 @@ public class Oscillator : MonoBehaviour
 
         //var offset = _movementVector * _movementFactor;
         //transform.position = _startingPosition + offset;
+        #endregion
+
+        if (_period == 0f)
+        {
+            return;
+        }
+
         var cycles = Time.time / _period;
         var rawSignWave = Mathf.Sin(Constant.Math.Tau * cycles);
         _movementFactor = (rawSignWave / 2f) + 0.5f;
