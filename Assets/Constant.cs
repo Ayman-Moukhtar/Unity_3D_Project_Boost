@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine;
 
 namespace Assets
 {
@@ -13,6 +9,11 @@ namespace Assets
             public const string Friendly = "Friendly";
             public const string Finish = "Finish";
             public const string Untagged = "Untagged";
+        }
+
+        public class Math
+        {
+            public const float Tau = Mathf.PI * 2f; // Mathematical Constant 
         }
     }
 }

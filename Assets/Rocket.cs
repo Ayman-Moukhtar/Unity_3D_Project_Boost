@@ -10,14 +10,16 @@ public class Rocket : MonoBehaviour
     private AudioSource _audio;
     private State _state;
 
-    [SerializeField]
-    private float MainThrust;
+    [SerializeField] private float _mainThrustSpeed = 2500f;
+    [SerializeField] private float _rotationSpeed = 250f;
+    [SerializeField] private float _transcendingDelay = 1.5f;
+    [SerializeField] private AudioClip _mainEngineAudio;
+    [SerializeField] private AudioClip _deathSound;
+    [SerializeField] private AudioClip _levelLoadSound;
+    [SerializeField] private ParticleSystem _mainEngineParticles;
+    [SerializeField] private ParticleSystem _deathParticles;
+    [SerializeField] private ParticleSystem _successParticles;
 
-    [SerializeField]
-    private float RotationSpeed;
-
-    [SerializeField]
-    private float TranscnedingDelay;
     // Start is called before the first frame update
     void Start()
     {
@@ -32,8 +34,8 @@ public class Rocket : MonoBehaviour
         {
             return;
         }
-        PlayAudio();
-        ProcessInput();
+        Thrust();
+        Rotate();
     }
 
     void OnCollisionEnter(Collision collision)
@@ -43,48 +45,75 @@ public class Rocket : MonoBehaviour
             return;
         }
 
-        _state = State.Transcending;
-
         switch (collision.gameObject.tag)
         {
             case Constant.Tag.Untagged:
-                Invoke("ResetGame", TranscnedingDelay);
+                StartDeathSequence();
                 break;
             case Constant.Tag.Finish:
-                Invoke("LoadNextScene", TranscnedingDelay);
-                break;
-            default:
-                _state = State.Alive;
+                StartSuccessSequence();
                 break;
         }
     }
 
-    private void LoadNextScene()
+    private void StartSuccessSequence()
     {
-        var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(currentSceneIndex == 1 ? 0 : 1);
+        _state = State.Transcending;
+        _audio.Stop();
+        _audio.PlayOneShot(_levelLoadSound);
+        _mainEngineParticles.Stop();
+        _successParticles.Play();
+        Invoke("LoadNextScene", _transcendingDelay);
     }
 
-    private void ResetGame() => SceneManager.LoadScene(0);
+    private void StartDeathSequence()
+    {
+        _state = State.Transcending;
+        _mainEngineParticles.Stop();
+        _deathParticles.Play();
+        _audio.Stop();
+        _audio.PlayOneShot(_deathSound);
+        Invoke("ResetGame", _transcendingDelay);
+    }
 
-    private void ProcessInput()
+    private void Thrust()
     {
         // Thrust
+        HandleMainEngineSound();
         if (Input.GetKey(KeyCode.Space))
         {
-            _rocket.AddRelativeForce(Vector3.up * MainThrust * Time.deltaTime);
+            _rocket.AddRelativeForce(Vector3.up * _mainThrustSpeed * Time.deltaTime);
+            _mainEngineParticles.Play();
+            return;
         }
 
+        _mainEngineParticles.Stop();
+    }
+
+    private void HandleMainEngineSound()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _audio.PlayOneShot(_mainEngineAudio);
+        }
+        else if (Input.GetKeyUp(KeyCode.Space))
+        {
+            _audio.Pause();
+        }
+    }
+
+    private void Rotate()
+    {
         // Rotate
         _rocket.freezeRotation = true; // To take manual control, and prevent exessive rotation when hitting something
 
         // Right
-        var rotationForThisFrame = RotationSpeed * Time.deltaTime;
+        var rotationForThisFrame = _rotationSpeed * Time.deltaTime;
         if (Input.GetKey(KeyCode.D))
         {
             _rocket.transform.Rotate(Vector3.back * rotationForThisFrame);
         }
-        
+
         // Left
         if (Input.GetKey(KeyCode.A))
         {
@@ -93,15 +122,13 @@ public class Rocket : MonoBehaviour
         _rocket.freezeRotation = false;
     }
 
-    private void PlayAudio()
+    #region Invokable Events
+    private void LoadNextScene()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            _audio.Play();
-        }
-        else if (Input.GetKeyUp(KeyCode.Space))
-        {
-            _audio.Pause();
-        }
+        var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        SceneManager.LoadScene(currentSceneIndex == 1 ? 0 : 1);
     }
+
+    private void ResetGame() => SceneManager.LoadScene(0);
+    #endregion
 }
