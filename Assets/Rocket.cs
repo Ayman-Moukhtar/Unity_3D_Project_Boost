@@ -6,6 +6,8 @@ public class Rocket : MonoBehaviour
 {
     private enum State { Alive, Transcending }
 
+    private int CurrentSceneIndex => SceneManager.GetActiveScene().buildIndex;
+
     private Rigidbody _rocket;
     private AudioSource _audio;
     private State _state;
@@ -145,11 +147,10 @@ public class Rocket : MonoBehaviour
     #region Invokable Events
     private void LoadNextScene()
     {
-        var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         var lastSceneIndex = SceneManager.sceneCountInBuildSettings - 1;
 
-        SceneManager.LoadScene(currentSceneIndex == lastSceneIndex ? 0 : currentSceneIndex + 1);
+        SceneManager.LoadScene(CurrentSceneIndex == lastSceneIndex ? 0 : CurrentSceneIndex + 1);
     }
-    private void ResetGame() => SceneManager.LoadScene(0);
+    private void ResetGame() => SceneManager.LoadScene(CurrentSceneIndex);
     #endregion
 }
